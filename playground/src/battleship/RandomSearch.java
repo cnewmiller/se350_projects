@@ -2,13 +2,23 @@ package battleship;
 
 import java.util.Random;
 
+
+/**
+ * Implements SearchStrategy.
+ * Randomly hits squares in the given grid until two ships are found. Propagates out when it hits one. 
+ * 
+ * Returns the ships in the order they were found.
+ * 
+ * @author Clay
+ *
+ */
 public class RandomSearch extends SearchStrategy {
 
-	private int numChecked = 0;
 	
 	@Override
 	public Ship[] doSearch(int[][] grid) {
-		this.numChecked=0;
+		super.doSearch(grid);
+		
 		Ship[] ret = new Ship[2];
 		Random r = new Random();
 		ret[0] = null;
@@ -25,11 +35,6 @@ public class RandomSearch extends SearchStrategy {
 			}			
 		}
 		return ret;
-	}
-	
-	@Override
-	public int getChecked() {
-		return this.numChecked;
 	}
 	
 	@Override

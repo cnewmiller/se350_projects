@@ -26,8 +26,6 @@ public class Ship {
 	}
 	
 	public String getCoordsFormatted() {
-	
-		
 		return String.format("%s found: (%d,%d) to (%d,%d)",this.name, x, y, (orientation == Orientations.Horizontal ? x+len-1 : x),
 															(orientation == Orientations.Vertical ? y+len-1 : y));
 	}

@@ -1,11 +1,18 @@
 package battleshipArbitrary.copy;
 
 public class HorizontalSearch extends SearchStrategy{
-
-	private int numChecked = 0;
 	
 	@Override
 	public Ship[] doSearch(int[][] grid, int numOfShips) {
+		
+		this.foggedGrid = new int[grid.length][grid[0].length];
+		for (int y = 0; y < foggedGrid.length ; y++) {
+			for (int x = 0 ; x < foggedGrid[0].length ; x++) {
+				foggedGrid[x][y] = 0;
+			}
+		}
+		
+		
 		this.numChecked = 0;
 		Ship[] ret = new Ship[numOfShips];
 		int shipIndex = 0;
@@ -14,7 +21,9 @@ public class HorizontalSearch extends SearchStrategy{
 		
 		for (int y = 0; y < grid.length ; y++) {
 			for (int x = 0 ; x < grid[0].length ; x++) {
-				numChecked++;
+				if (this.foggedGrid[x][y] == 0) {
+					numChecked++;
+				}
 				if (grid[x][y] != 0 && target[grid[x][y]-1] == 0) {
 					target[grid[x][y]-1]++;
 					ret[shipIndex++] = this.propagate(x, y, grid, grid[x][y]);
@@ -29,10 +38,7 @@ public class HorizontalSearch extends SearchStrategy{
 		return null;
 	}
 	
-	@Override
-	public int getChecked() {
-		return this.numChecked;
-	}
+	
 	@Override
 	public String getName() {
 		return "Horizontal Search";

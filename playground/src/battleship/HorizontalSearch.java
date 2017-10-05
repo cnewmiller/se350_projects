@@ -1,12 +1,20 @@
 package battleship;
 
-public class HorizontalSearch extends SearchStrategy{
 
-	private int numChecked = 0;
+/**
+ * Implements SearchStrategy.
+ * 
+ * Runs horizontally along the given grid, propagates out to find the rest of any ship it finds on the way.
+ * Returns when two ships are found.
+ * @author Clay
+ *
+ */
+public class HorizontalSearch extends SearchStrategy{
 	
 	@Override
 	public Ship[] doSearch(int[][] grid) {
-		this.numChecked = 0;
+		super.doSearch(grid);
+		
 		Ship[] ret = new Ship[2];
 		int shipIndex = 0;
 		int[] target = {0, 0};
@@ -28,10 +36,6 @@ public class HorizontalSearch extends SearchStrategy{
 		return ret;
 	}
 	
-	@Override
-	public int getChecked() {
-		return this.numChecked;
-	}
 	@Override
 	public String getName() {
 		return "Horizontal Search";

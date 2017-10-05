@@ -52,10 +52,10 @@ public class BattleshipSearch {
 	public static void main(String[] args) {
 		
 		try{
-			String game = "(0,0)(0,1)(5,5)(5,6)(5,7)(12,8)(13,8)(14,8)(15,8)(16,8)";
-			
-			for (int i = 1; i < 4 ; i++) {
-				//System.out.printf("\n");
+//			String game = "(0,0)(0,1)(0,2)(0,3)(5,5)(5,6)(5,7)(12,8)(13,8)(14,8)(15,8)(16,8)";
+			String game = "(0,0)(0,1)(0,2)(0,3)(0,4)(4,15)(4,16)(4,17)";
+			for (int i = 1; i < 2 ; i++) {
+				System.out.printf("\n");
 				BattleshipSearch b = new BattleshipSearch();
 				b.buildGrid(game);
 				b.printGrid();
@@ -73,17 +73,19 @@ public class BattleshipSearch {
 				
 				b.setStrategy(new RandomSearch());
 				b.findShips();
-				System.out.printf("Strategy: %s \n", b.getStrategy().getName());
+				System.out.printf("\nStrategy: %s \n", b.getStrategy().getName());
 				System.out.printf("Number of cells searched: %d\n", b.getStrategy().getChecked());
 				for(int j = 0 ; j< b.foundShips.length ; j++) {
 					System.out.printf("%s\n", b.foundShips[j].getCoordsFormatted());
 				}
 				
-//				b.setStrategy(new DiamondSearch());
-//				b.findShips();
-//				System.out.printf("Strategy: %s \n", b.getStrategy().getName());
-//				System.out.printf("Number of cells searched: %d\n", b.getStrategy().getChecked());
-//				System.out.printf("%s %s\n", b.foundShips[0].getCoordsFormatted(), b.foundShips[1].getCoordsFormatted());
+				b.setStrategy(new DiamondSearch());
+				b.findShips();
+				System.out.printf("\nStrategy: %s \n", b.getStrategy().getName());
+				System.out.printf("Number of cells searched: %d\n", b.getStrategy().getChecked());
+				for(int j = 0 ; j< b.foundShips.length ; j++) {
+					System.out.printf("%s\n", b.foundShips[j].getCoordsFormatted());
+				}
 //				
 			}
 			

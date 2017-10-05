@@ -3,22 +3,45 @@ package battleship;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+
+/**
+ * The "Client" in the Strategy design pattern.
+ * 
+ * @author Clay
+ *
+ */
 public class BattleshipSearch {
 	
 	private int[][] battleGrid = new int[25][25];
 	private SearchStrategy strat = new HorizontalSearch();
 	private Ship[] foundShips = new Ship[2];
 	
+	
+	/**
+	 * Sets the search strategy of the instance of BattleshipSearch
+	 * @param s
+	 */
 	public void setStrategy(SearchStrategy s) {
 		this.strat = s;
 	}
+	/**
+	 * returns the currently associated SearchStrategy held by this object
+	 * @return
+	 */
 	public SearchStrategy getStrategy() {
 		return this.strat;
 	}
-	
-	public void buildGrid(String input) { //uggggh so janky
+	/**
+	 * Accepts a String object representing a single game of Battleship, following the rules given in the assignment sheet.
+	 * Parses it and puts the parsed ships into this instance's battleGrid member.
+	 * No return type.
+	 * Known problems: Parses more than two ships, but cannot parse two ships touching each other, or sharing a starting row/column with the previous ship's ending point.
+	 * 
+	 * @param input
+	 */
+	public void buildGrid(String input) { //this is a janky parse, but it works for now
 		
-		String[] split = input.split("[\\D|\\s]+");			//fix this, it leaves a split space at the front
+		String[] split = input.split("[\\D|\\s]+");			//This leaves a split space at the front, meh whatever
 		int prevCoordX=-1, prevCoordY=-1, shipNo = 0;
 		
 		for (int i = 1; i< split.length ; i+=2) {
@@ -34,15 +57,10 @@ public class BattleshipSearch {
 		}
 		
 	}
-	public void printGrid() {
-		for (int i = 0; i < battleGrid.length ; i++) {
-			for (int j = 0 ; j < battleGrid[0].length ; j++) {
-				System.out.print(battleGrid[j][i]);
-			}
-			System.out.println();
-		}
-	}
 	
+	/**
+	 * Runs the currently set SearchStrategy, puts the resulting ships into the current instance's foundShips field.
+	 */
 	public void findShips() {
 		this.foundShips = strat.doSearch(this.battleGrid);
 	}
@@ -50,14 +68,14 @@ public class BattleshipSearch {
 	public static void main(String[] args) {
 		
 		try{
-			BufferedReader input= new BufferedReader(new FileReader("src/battleship/input.txt"));
+			BufferedReader input= new BufferedReader(new FileReader("input.txt"));
 			
 			for (int i = 1; i < 4 ; i++) {
-				//System.out.printf("\n");
+				
 				BattleshipSearch b = new BattleshipSearch();
 				b.buildGrid(input.readLine());
 				System.out.printf("\nGame %d\n", i);
-				
+								
 				b.setStrategy(new HorizontalSearch());
 				b.findShips();
 				System.out.printf("Strategy: %s \n", b.getStrategy().getName());
@@ -82,13 +100,12 @@ public class BattleshipSearch {
 			 
 			input.close();
 		}
+		catch(java.io.FileNotFoundException e) {
+			System.out.println("Please place the input.txt file in the working directory.");
+		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
-		
-		//(0,0)(0,1)(0,2)(0,3)(0,4)(4,15)(4,16)(4,17)
-		//(5,9)(5,10)(5,11)(5,12)(5,13)(20,5)(20,6)(20,7)
-		//(15,3)(16,3)(17,3)(18,3)(19,3)(24,6)(24,7)(24,8)
 	}
 
 }
