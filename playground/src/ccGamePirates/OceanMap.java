@@ -4,20 +4,23 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
 
-//import javafx.application.*;
-//import javafx.scene.Scene;
-//import javafx.scene.layout.AnchorPane;
-//import javafx.scene.text.Font;
-//import javafx.scene.text.Text;
-//import javafx.stage.*;
-
-
 public class OceanMap implements Observer {
 
+	public static boolean OPENSQUARE = false, TAKENSQUARE = true;
 	
 	//false is open ocean, true is island
 	private boolean[][] map = new boolean [OceanExplorer.dimension][OceanExplorer.dimension];
 	public boolean[][] getMap () {return this.map;}
+	
+	public Point getOpenSquare(Random r) {
+		
+		Point p = new Point(r.nextInt(OceanExplorer.dimension), r.nextInt(OceanExplorer.dimension));
+		while(this.map[p.getX()][p.getY()]) {
+			p = new Point(r.nextInt(OceanExplorer.dimension), r.nextInt(OceanExplorer.dimension));
+		}
+		
+		return p;
+	}
 	
 	int numOfIslands;
 	int chanceOfIslands;
@@ -37,13 +40,10 @@ public class OceanMap implements Observer {
 				i--;
 			}
 			else {
-				map[rX][rY] = true;
+				map[rX][rY] = TAKENSQUARE;
 			}
 			
 		}
-		map[OceanExplorer.dimension-1][OceanExplorer.dimension-1] = false;
-		map[0][0] = false;
-		
 	}
 	
 	@Override

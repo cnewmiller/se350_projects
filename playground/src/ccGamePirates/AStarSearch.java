@@ -1,23 +1,32 @@
 package ccGamePirates;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+
+/**
+ * Specific implementation of SearchStrategy. Uses a priority queue  to search nodes and defines the heuristic as a Manhattan distance comparison.
+ * 
+ * getBestChoice() returns the direction of the current best move to get to where the target point is located.
+ * 
+ * @author Clay
+ *
+ */
 public class AStarSearch extends SearchStrategy{
 	
 	public AStarSearch(boolean[][] map) {
 		grid = map;
-	}
+		this.checker = new SimpleChecker();
+		}
 	
 	public Directions getBestChoice(Point start, Point end) {
 		this.goal = end;
+		
 		seen = new HashMap<Point, Boolean>();
-		
-		
+				
 		Queue<SearchNode> q = new PriorityQueue<SearchNode>();
-		SearchNode st = new SearchNode(this, start, end, 0, null, null);
+		SearchNode st = new SearchNode(start, end, 0, null, null, 0);
 		
 		q.add(st);
 		
@@ -27,9 +36,7 @@ public class AStarSearch extends SearchStrategy{
 			seen.put(current.p, true);
 			
 			if (current.p.equals(end)){
-				//backtrack
 				return backTrack(current);
-				
 			}
 			else {
 				current.expandChildren();
@@ -40,7 +47,18 @@ public class AStarSearch extends SearchStrategy{
 				}
 			}			
 		}
-		return null;
+		return null; //not found
+	}
+
+	
+	/**
+	 * Heuristic
+	 */
+	@Override
+	int evaluatePoint(Point start, Point end) {//Manhattan distance, basic heuristic
+		int xdiff = end.getX() - start.getX();
+		int ydiff = end.getY() - start.getY();
+		return xdiff + ydiff;
 	}
 	
 	

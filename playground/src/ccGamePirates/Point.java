@@ -1,5 +1,13 @@
 package ccGamePirates;
 
+
+/**
+ * Personally defined Point class to represent a 2d point. This allowed me to define my own hashCode and equals functions.
+ * Not strictly necessary, but I did it anyway.
+ * 
+ * @author Clay
+ *
+ */
 public class Point  {
 	private int x, y;
 	public int getX() {return x;}

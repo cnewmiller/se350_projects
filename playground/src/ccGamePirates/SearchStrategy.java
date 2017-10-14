@@ -2,18 +2,23 @@ package ccGamePirates;
 
 import java.util.Map;
 
-import ccGamePirates.SearchStrategy.Directions;
 
+/**
+ * 
+ * Abstract superclass for any grid searching algorithm, such as best-first, uniform-cost, depth-first, etc.
+ * 
+ * @author Clay
+ *
+ */
 public abstract class SearchStrategy  {
 	boolean[][] grid;
 	Map<Point, Boolean> seen;
 	Point goal;
+	public static enum Directions{UP, DOWN, LEFT, RIGHT};
+	protected GridChecker checker;
 	
 	protected class SearchNode implements Comparable<Object>{
-		/**
-		 * 
-		 */
-		private SearchStrategy search;
+
 		Point p;
 		private int score;
 		private int pathCost;
@@ -21,19 +26,19 @@ public abstract class SearchStrategy  {
 		SearchNode parent;
 		Directions moveToHere;
 		
-		SearchNode(SearchStrategy searcher, Point p, Point goal, int score, SearchNode parent, Directions move){
-			this.search = searcher;
+		SearchNode(Point p, Point goal, int score, SearchNode parent, Directions move, int cost){
 			this.p = p;			
 			this.parent = parent;
 			this.moveToHere = move;
-			this.pathCost = (parent != null ? parent.pathCost + 1 : 0);
-			this.score = score + pathCost;	//score needs to be a combination of how many moves away it is, plus how far from the CC ship it is
+			this.pathCost = (parent != null ? parent.pathCost + cost : 0);
+			this.score = score + pathCost;	//score is a combination of how many moves away it is, plus how far from the CC ship it is
 		}
+		//successor function in tandem with createChildren
 		public void expandChildren(){
-			Point[] childs = this.search.createChildren(this.p);
+			Point[] childs = createChildren(this.p);
 			for (Directions d: Directions.values()) {
-				if (childs[d.ordinal()] != null && !this.search.seen.containsKey(childs[d.ordinal()])) {
-					children[d.ordinal()] = new SearchNode(this.search, childs[d.ordinal()], this.search.goal, this.search.evaluatePoint(p, this.search.goal), this, d);
+				if (childs[d.ordinal()] != null && !seen.containsKey(childs[d.ordinal()])) {
+					children[d.ordinal()] = new SearchNode(childs[d.ordinal()], goal, evaluatePoint(p, goal), this, d, 1);
 				}
 			}
 		}
@@ -67,84 +72,33 @@ public abstract class SearchStrategy  {
 		
 	}
 	
-	protected int evaluatePoint(Point start, Point end) {//manhattan distance
-		int xdiff = end.getX() - start.getX();
-		int ydiff = end.getY() - start.getY();
-		return xdiff + ydiff;
-	}
+	//can return 0 if you don't want any heuristic searching, but I require it to be implemented rather than defaulting to 0
+	abstract int evaluatePoint(Point start, Point end);
 	
-	
-	public static enum Directions{UP, DOWN, LEFT, RIGHT};
-	private Point[] createChildren(Point start) { //this is the order of moves
+	private Point[] createChildren(Point start) {
 		Point[] childs = {null, null, null, null};
-		if (checkUp(start)) {
+		if (checker.checkUp(start, grid) || (start.getX() == goal.getX() && start.getY()-1 == goal.getY()) ) {
 			childs[Directions.UP.ordinal()] = new Point(start.getX(), start.getY()-1);
 		}
-		if (checkDown(start)) {
+		if (checker.checkDown(start, grid) || (start.getX() == goal.getX() && start.getY()+1 == goal.getY())) {
 			childs[Directions.DOWN.ordinal()] = new Point(start.getX(), start.getY()+1);
 		}
-		if (checkLeft(start)) {
+		if (checker.checkLeft(start, grid) || (start.getX()-1 == goal.getX() && start.getY() == goal.getY())) {
 			childs[Directions.LEFT.ordinal()] = new Point(start.getX()-1, start.getY());
 		}
-		if (checkRight(start)) {
+		if (checker.checkRight(start, grid) || (start.getX()+1 == goal.getX() && start.getY() == goal.getY())) {
 			childs[Directions.RIGHT.ordinal()] = new Point(start.getX()+1, start.getY());
 		}
 		return childs;
 	}
+	
 	protected Directions backTrack(SearchNode s) {
-		
 		while (s.parent != null) {
 			if (s.parent.moveToHere == null)
 				return s.moveToHere;
 			
 			s = s.parent;
 		}
-		
 		return null;
 	}
-	
-	
-	
-	protected boolean checkLeft(Point p) {
-		int xPos = p.getX(), yPos = p.getY();
-		if (xPos > 0) {
-			
-			if (!grid[xPos-1][yPos] || (xPos-1 == goal.getX() && yPos == goal.getY()) ) {
-				return true;
-			}
-		}
-		return false;
-	}
-	protected boolean checkRight(Point p) {
-		int xPos = p.getX(), yPos = p.getY();
-		if (xPos < grid.length-1) {
-			
-			if (!grid[xPos+1][yPos] || (xPos+1 == goal.getX() && yPos == goal.getY())) {
-				return true;
-			}
-		}
-		return false;
-	}
-	protected boolean checkUp(Point p) {
-		int xPos = p.getX(), yPos = p.getY();
-		if (yPos > 0) {
-			
-			if (!grid[xPos][yPos-1] || (xPos == goal.getX() && yPos-1 == goal.getY())) {
-				return true;
-			}
-		}
-		return false;
-	}
-	protected boolean checkDown(Point p) {
-		int xPos = p.getX(), yPos = p.getY();
-		if (yPos < grid[0].length-1) {
-			
-			if (!grid[xPos][yPos+1] || (xPos == goal.getX() && yPos+1 == goal.getY())) {
-				return true;
-			}
-
-		}
-		return false;
-	}
-	
 }

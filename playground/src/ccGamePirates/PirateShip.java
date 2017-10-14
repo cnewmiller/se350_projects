@@ -5,29 +5,46 @@ import java.util.Observer;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+
+/**
+ * 
+ * PirateShip class that represents computer controlled ships that track the player ship.
+ * Observable to notify OceanMap of its moves, Observer to react to the player ColumbusShip moves.
+ * Default location is bottom right corner, opposit default player location.
+ * 
+ * The private boolean turn variable allows it to only move on every other player movement.
+ * 
+ * @author Clay
+ *
+ */
 public class PirateShip extends Observable implements Observer, PointHistory {
 
-	String imageLocation = "ccGamePirates/pirateShip.png";
+	String imageLocation = "ccGamePirates/pirateShip_1.png";
 	private Point p;
 	private Point prevPoint;
 	private ImageView shipImage;
-	public ImageView getShipImage() {return this.shipImage;}
 	private AStarSearch searchAgent;
-	
-	
-//	private OceanMap map;
 	private boolean[][] grid;
+	private boolean turn = false;
+	private GridChecker checker;
+	
+	
+	public ImageView getShipImage() {return this.shipImage;}
+	
 	
 	public PirateShip(OceanMap map) {
 		this.grid = map.getMap();
+		this.checker = new SimpleChecker();
 		searchAgent = new AStarSearch(this.grid);
 		p = new Point();
 		prevPoint = new Point();
 		this.shipImage = new ImageView(new Image(imageLocation, OceanExplorer.scale, OceanExplorer.scale, true, true));
 		this.setShipLocation(OceanExplorer.dimension-1, OceanExplorer.dimension-1);
 	}
+	
 	public PirateShip(OceanMap map, Point p) {
 		this.grid = map.getMap();
+		this.checker = new SimpleChecker();
 		searchAgent = new AStarSearch(this.grid);
 		this.p = p;
 		prevPoint = null;
@@ -38,6 +55,7 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 	public Point getShipLocation() {
 		return this.p;
 	}
+	
 	private void updatePrev() {
 		if (prevPoint == null) {
 			prevPoint = new Point();
@@ -53,12 +71,10 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 		
 		shipImage.setX(p.getX()*OceanExplorer.scale);
 		shipImage.setY(p.getY()*OceanExplorer.scale);
-		
-		
 	}
 	
 	public void goEast() {
-		if (checkRight(p.getX(), p.getY())) {
+		if (checker.checkRight(p, grid)) {
 			updatePrev();
 			p.setX(p.getX()+1);
 		}
@@ -66,7 +82,7 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 		shipImage.setY(p.getY()*OceanExplorer.scale);
 	}
 	public void goWest() {
-		if (checkLeft(p.getX(), p.getY())) {
+		if (checker.checkLeft(p, grid)) {
 			updatePrev();
 			p.setX(p.getX()-1);
 		}
@@ -74,7 +90,7 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 		shipImage.setY(p.getY()*OceanExplorer.scale);
 	}
 	public void goNorth() {
-		if (checkUp(p.getX(), p.getY())) {
+		if (checker.checkUp(p, grid)) {
 			updatePrev();
 			p.setY(p.getY()-1);
 		}
@@ -82,7 +98,7 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 		shipImage.setY(p.getY()*OceanExplorer.scale);
 	}
 	public void goSouth() {
-		if (checkDown(p.getX(), p.getY())) {
+		if (checker.checkDown(p, grid)) {
 			updatePrev();
 			p.setY(p.getY()+1);
 		}
@@ -90,40 +106,6 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 		shipImage.setY(p.getY()*OceanExplorer.scale);
 	}
 
-	private boolean checkLeft(int xPos, int yPos) {
-		
-		if (xPos > 0) {
-			if (!grid[xPos-1][yPos]) {
-				return true;
-			}
-		}
-		return false;
-	}
-	private boolean checkRight(int xPos, int yPos) {
-		if (xPos < grid.length-1) {
-			if (!grid[xPos+1][yPos]) {
-				return true;
-			}
-		}
-		return false;
-	}
-	private boolean checkUp(int xPos, int yPos) {
-		if (yPos > 0) {
-			if (!grid[xPos][yPos-1]) {
-				return true;
-			}
-		}
-		return false;
-	}
-	private boolean checkDown(int xPos, int yPos) {
-		if (yPos < grid[0].length-1) {
-			if (!grid[xPos][yPos+1]) {
-				return true;
-			}
-
-		}
-		return false;
-	}
 	@Override
 	public Point getPrevPoint() {
 		return prevPoint;
@@ -133,9 +115,9 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 	@Override
 	public void update(Observable o, Object arg) {
 		
-		if (arg instanceof Point) {
+		if (arg instanceof Point && turn) {
+			turn = false;
 			Point target = (Point) arg;
-			
 			
 			AStarSearch.Directions choice = searchAgent.getBestChoice(this.p, target);
 			if (choice == null) return;
@@ -157,7 +139,9 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 			}
 			this.setChanged();
 			notifyObservers(this.p);
-			
+		}
+		else {
+			turn = true;
 		}
 	}
 	
