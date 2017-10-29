@@ -101,4 +101,5 @@ public abstract class SearchStrategy  {
 		}
 		return null;
 	}
+	
 }

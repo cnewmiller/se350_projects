@@ -29,7 +29,6 @@ public class ShapeGame extends Application {
 			
 			clickPoint = new Point2D(mouseEvent.getX(), mouseEvent.getY());
 			
-//			System.out.println(clickPoint.getX()+ " " +clickPoint.getY());
 			String eventName = mouseEvent.getEventType().getName();
 			
 			if(!inDragMode){
@@ -79,9 +78,7 @@ public class ShapeGame extends Application {
 							Dot newDot = new Dot(clickPoint, Color.BLACK, true);
 							components.add(newDot);
 							root.getChildren().add(newDot.getCircle());
-							
 						}
-						
 					}
 					else if (mouseEvent.isSecondaryButtonDown()) {
 						if (currentComponent == null) {
@@ -93,7 +90,6 @@ public class ShapeGame extends Application {
 					}
 				}
 				else {
-//					System.out.println("found a thing");
 					if (currentComponent instanceof Dot) {
 						Dot d = (Dot) currentComponent;
 						Container c = d.getParent();
@@ -101,10 +97,7 @@ public class ShapeGame extends Application {
 							c.removeChild(d);
 						}
 						d.setColor(Color.BLACK);
-						
 					}
-					 
-					
 				}
 				
 			
@@ -127,7 +120,7 @@ public class ShapeGame extends Application {
 		}
 		
 		if (currentComponent == null) {
-			System.out.println("empty");
+//			System.out.println("empty");
 		}
 		
 		return currentComponent;
