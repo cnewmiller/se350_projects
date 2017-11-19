@@ -1,7 +1,16 @@
 package ccGameFinal;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 
+import ccGameFinal.Interfaces.Collidable;
+import ccGameFinal.Interfaces.CollisionFunction;
+import ccGameFinal.Interfaces.GridChecker;
+import ccGameFinal.Interfaces.PointHistory;
+import ccGameFinal.UtilityClasses.Point;
+import ccGameFinal.UtilityClasses.SimpleChecker;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -16,23 +25,45 @@ import javafx.scene.image.ImageView;
  * @author Clay
  *
  */
-public class ColumbusShip extends Observable implements PointHistory{
+public class ColumbusShip extends Observable implements PointHistory, Collidable{
+	public static Map<Class<?>, CollisionFunction> collisions = new HashMap<>();
 	
-	String imageLocation = "ccGame/ship.png";
+	String imageLocation = "ccGameFinal/images/ship.png";
 	private Point p;
 	private Point prevPoint = null;
 	private ImageView shipImage;
+	private Label treasureLabel;
+	public Label getTreasureLabel() {return this.treasureLabel;}
 	public ImageView getShipImage() {return this.shipImage;}
 	private GridChecker checker;
+	private Treasure booty = null;
+	public void addCollisionClass(Class<?> otherClass, CollisionFunction f) {
+		collisions.put(otherClass, f);
+	}
+	public void removeCollisionClass(Class<?> otherClass) {
+		collisions.remove(otherClass);
+	}
+	
+	
+	public Treasure getBooty() {
+		return booty;
+	}
+	public void setBooty(Treasure t) {
+		this.booty = t;
+	}
 	
 	private boolean[][] grid;
 	
-	public ColumbusShip(OceanMap map) {
-		this.grid = map.getMap();
+	public ColumbusShip() {
+		this.grid = OceanMap.getInstance().getMap();
 		checker = new SimpleChecker();
 		p = new Point();
 		prevPoint = new Point();
 		this.shipImage = new ImageView(new Image(imageLocation, OceanExplorer.scale, OceanExplorer.scale, true, true));
+		this.treasureLabel = new Label("No treasure yet!");
+		treasureLabel.setLayoutY(OceanExplorer.scale*OceanExplorer.dimension+40);
+		treasureLabel.setWrapText(true);
+		treasureLabel.setMaxWidth(OceanExplorer.scale*OceanExplorer.dimension);
 	}
 	
 	private void updatePrev() {
@@ -40,7 +71,7 @@ public class ColumbusShip extends Observable implements PointHistory{
 		prevPoint.setY(p.getY());
 	}
 	
-	public Point getShipLocation() {
+	public Point getPoint() {
 		return this.p;
 	}
 	public void setShipLocation(int x, int y) {
@@ -53,42 +84,53 @@ public class ColumbusShip extends Observable implements PointHistory{
 	}
 	
 	public void goEast() {
+		updatePrev();
 		if (checker.checkRight(p, grid)) {
-			updatePrev();
 			p.setX(p.getX()+1);
 		}
 		this.setChanged();
-		this.notifyObservers(p);
+		this.notifyObservers(this);
 	}
 	public void goWest() {
+		updatePrev();
 		if (checker.checkLeft(p, grid)) {
-			updatePrev();
 			p.setX(p.getX()-1);
 		}
 		this.setChanged();
-		this.notifyObservers(p);
+		this.notifyObservers(this);
 	}
 	public void goNorth() {
+		updatePrev();
 		if (checker.checkUp(p, grid)) {
-			updatePrev();
 			p.setY(p.getY()-1);
 		}
 		this.setChanged();
-		this.notifyObservers(p);
-	}
+		this.notifyObservers(this);
+		}
 	public void goSouth() {
+		updatePrev();
 		if (checker.checkDown(p, grid)) {
-			updatePrev();
 			p.setY(p.getY()+1);
 		}
 		this.setChanged();
-		this.notifyObservers(p);
+		this.notifyObservers(this);
 	}
 
 	@Override
 	public Point getPrevPoint() {
 		return prevPoint;
 	}
+
 	
+
+	@Override
+	public void collideWith(Collidable c) {
+		
+		if (collisions.containsKey(c.getClass())) {
+			collisions.get(c.getClass()).doCollision(this, c);
+		}
+		
+		
+	}
 	
 }

@@ -2,11 +2,18 @@ package ccGameFinal;
 
 import java.util.Observable;
 import java.util.Observer;
+
+import ccGameFinal.Interfaces.GridChecker;
+import ccGameFinal.Interfaces.PointHistory;
+import ccGameFinal.UtilityClasses.AStarSearch;
+import ccGameFinal.UtilityClasses.AdjacencyChecker;
+import ccGameFinal.UtilityClasses.Point;
+import ccGameFinal.UtilityClasses.SearchStrategy;
+import ccGameFinal.UtilityClasses.SimpleChecker;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 
-//change to factory
 /**
  * 
  * PirateShip class that represents computer controlled ships that track the player ship.
@@ -15,12 +22,14 @@ import javafx.scene.image.ImageView;
  * 
  * The private boolean turn variable allows it to only move on every other player movement.
  * 
+ * Pirates are not Collidable: they cannot collect treasure or interact with the port.
+ * 
  * @author Clay
  *
  */
 public class PirateShip extends Observable implements Observer, PointHistory {
 
-	String imageLocation = "ccGamePirates/pirateShip_1.png";
+	String imageLocation = "ccGameFinal/images/pirateShip_1.png";
 	private Point p;
 	private Point prevPoint;
 	private ImageView shipImage;
@@ -29,27 +38,33 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 	private boolean turn = false;
 	private GridChecker checker;
 	
-	
 	public ImageView getShipImage() {return this.shipImage;}
+	public void setImage(String location) {
+		imageLocation = location;
+		this.shipImage = new ImageView(new Image(imageLocation, OceanExplorer.scale, OceanExplorer.scale, true, true));
+		shipImage.setX(p.getX()*OceanExplorer.scale);
+		shipImage.setY(p.getY()*OceanExplorer.scale);
+	}
 	
 	
-	public PirateShip(OceanMap map) {
-		this.grid = map.getMap();
+	public PirateShip() {
+		
+		this.grid = OceanMap.getInstance().getMap();
 		this.checker = new SimpleChecker();
 		searchAgent = new AStarSearch(this.grid);
 		p = new Point();
 		prevPoint = new Point();
-		this.shipImage = new ImageView(new Image(imageLocation, OceanExplorer.scale, OceanExplorer.scale, true, true));
+		this.setImage(imageLocation);
 		this.setShipLocation(OceanExplorer.dimension-1, OceanExplorer.dimension-1);
 	}
 	
-	public PirateShip(OceanMap map, Point p) {
-		this.grid = map.getMap();
+	public PirateShip(Point p, SearchStrategy agent) {
+		this.grid = OceanMap.getInstance().getMap();
 		this.checker = new SimpleChecker();
-		searchAgent = new AStarSearch(this.grid);
+		searchAgent = agent;
 		this.p = p;
 		prevPoint = null;
-		this.shipImage = new ImageView(new Image(imageLocation, OceanExplorer.scale, OceanExplorer.scale, true, true));
+		this.setImage(imageLocation);
 		this.setShipLocation(this.p.getX(), this.p.getY());
 	}
 	
@@ -75,32 +90,32 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 	}
 	
 	public void goEast() {
+		updatePrev();
 		if (checker.checkRight(p, grid)) {
-			updatePrev();
 			p.setX(p.getX()+1);
 		}
 		shipImage.setX(p.getX()*OceanExplorer.scale);
 		shipImage.setY(p.getY()*OceanExplorer.scale);
 	}
 	public void goWest() {
+		updatePrev();
 		if (checker.checkLeft(p, grid)) {
-			updatePrev();
 			p.setX(p.getX()-1);
 		}
 		shipImage.setX(p.getX()*OceanExplorer.scale);
 		shipImage.setY(p.getY()*OceanExplorer.scale);
 	}
 	public void goNorth() {
+		updatePrev();
 		if (checker.checkUp(p, grid)) {
-			updatePrev();
 			p.setY(p.getY()-1);
 		}
 		shipImage.setX(p.getX()*OceanExplorer.scale);
 		shipImage.setY(p.getY()*OceanExplorer.scale);
 	}
 	public void goSouth() {
+		updatePrev();
 		if (checker.checkDown(p, grid)) {
-			updatePrev();
 			p.setY(p.getY()+1);
 		}
 		shipImage.setX(p.getX()*OceanExplorer.scale);
@@ -116,12 +131,24 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 	@Override
 	public void update(Observable o, Object arg) {
 		
-		if (arg instanceof Point && turn) {
+		
+				
+		if (o instanceof PointHistory && turn) {
+			if (o instanceof PointHistory) {
+				if (AdjacencyChecker.isNextToAnywhere(this.p, ( (PointHistory)o).getPoint())) {
+					OceanExplorer.getInstance().endGame();
+				}
+			}
 			turn = false;
-			Point target = (Point) arg;
+			PointHistory other = (PointHistory) o;
+			Point target = other.getPoint();	
 			
 			SearchStrategy.Directions choice = searchAgent.getBestChoice(this.p, target);
-			if (choice == null) return;
+			if (choice == null) {
+				this.setChanged();
+				notifyObservers(this);
+				return;
+			}
 			switch (choice) {
 			case UP:
 				goNorth();
@@ -139,11 +166,23 @@ public class PirateShip extends Observable implements Observer, PointHistory {
 				break;
 			}
 			this.setChanged();
-			notifyObservers(this.p);
+			notifyObservers(this);
 		}
 		else {
+			
+			if (o instanceof ColumbusShip) {
+				if (AdjacencyChecker.isNextToAnywhere(this.p, ( (PointHistory)o).getPoint())) {
+					OceanExplorer.getInstance().endGame();
+				}
+			}
 			turn = true;
 		}
 	}
+
+	@Override
+	public Point getPoint() {
+		return this.p;
+	}
+	
 	
 }
